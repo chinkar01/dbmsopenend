@@ -1,0 +1,81 @@
+CREATE OR REPLACE TRIGGER validate_student_insert
+BEFORE INSERT ON student
+FOR EACH ROW
+DECLARE
+  cnt NUMBER;
+BEGIN
+  -- check if the student's year of joining is in the future
+  IF :NEW.yog > sysdate THEN
+    RAISE_APPLICATION_ERROR(-20001, 'Year of joining must not be in the future');
+  END IF;
+  
+END;
+/
+This trigger checks that the year of joining (yog) for a new student must not be in the future.
+
+
+
+
+//write a before insert trigger to find maximum number of subject is limited to 5
+
+create or replace trigger max_subject
+before insert on subject
+for each row
+declare
+cnt number;
+begin
+select count(*) into cnt from subject;
+if(cnt>4) then
+raise_application_error(-20010,'MAX SUBJECT LIMIT REACHED');
+end if;
+end;
+/
+
+
+
+//write a deletion trigger does not allow to deleting current graduates.
+
+
+CREATE OR REPLACE TRIGGER trg_prevent_delete_current_yog
+BEFORE DELETE ON student
+FOR EACH ROW
+DECLARE
+  current_date DATE := SYSDATE;
+  graduation_year NUMBER;
+BEGIN
+  graduation_year := TO_NUMBER(TO_CHAR(current_date, 'YYYY')) - TO_NUMBER(TO_CHAR(:OLD.yog, 'YYYY'));
+  IF graduation_year < 4 THEN
+    RAISE_APPLICATION_ERROR(-20999, 'Cannot delete current graduates');
+  END IF;
+END;
+/
+
+
+//write a trigger  to establish the constraints that the student must participate in maximum one sport
+CREATE OR REPLACE TRIGGER sport_participation
+  BEFORE INSERT OR UPDATE ON sports
+  FOR EACH ROW
+DECLARE
+  cnt NUMBER;
+BEGIN
+  SELECT COUNT(*)
+  INTO cnt
+  FROM sports
+  WHERE usn = :new.usn;
+  
+  IF cnt >= 1 THEN
+    RAISE_APPLICATION_ERROR(-20001, 'The student is already enrolled in a sport');
+  END IF;
+END;
+/
+
+
+This trigger counts the number of times the student usn appears in the sports table. If the count is greater than 0, it raises an error with error code 20010 and the message "A STUDENT CAN ONLY PARTICIPATE IN ONE SPORT".
+
+
+
+
+
+
+
+

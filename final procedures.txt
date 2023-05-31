@@ -1,0 +1,109 @@
+1.procedure to retrieve all students in a specific hostel:
+
+**
+CREATE OR REPLACE PROCEDURE display_students_in_hostel (hostel_name varchar)
+IS
+student_rec student%rowtype;
+cursor c is select s.* from student s, student_hostel sh
+where sh.hname = hostel_name and s.usn = sh.usn;
+begin
+for student_rec in c loop
+sys.dbms_output.put_line(student_rec.usn||' '||student_rec.fn||' '||student_rec.ln);
+end loop;
+end;
+/
+
+
+
+//procedure
+ exec display_students_in_hostel('Basava');
+
+_________________________________________________________________________________________________________________________
+
+
+
+2.Display all departments along with the name of their Head of Department:
+**
+CREATE OR REPLACE PROCEDURE prc_display_hod_and_dept IS
+    CURSOR c_dept IS 
+        SELECT d.dept_no, d.name as dept_name, s.name as hod_name 
+        FROM department d 
+        INNER JOIN staff s ON d.hod_id = s.sid;
+    X c_dept%ROWTYPE;
+BEGIN
+    sys.dbms_output.put_line('Department Number' || ' ' || 'Department Name' || ' ' || 'HOD Name');
+    FOR X IN c_dept LOOP
+        sys.dbms_output.put_line(X.dept_no || ' ' || X.dept_name || ' ' || X.hod_name);
+    END LOOP;
+END;
+/
+
+
+//procedure
+ exec  prc_display_hod_and_dept;
+
+
+________________________________________________________________________________________________________________________
+
+
+
+3.Procedure to retrieve the student and ID details for a specific student:
+**
+CREATE OR REPLACE PROCEDURE prc_student_and_id_by_usn(p_usn IN VARCHAR) IS
+    X student%ROWTYPE;
+    X1 id%ROWTYPE;
+    CURSOR c_student IS 
+        SELECT s.* FROM student s 
+        WHERE s.usn = p_usn;
+    CURSOR c_id IS 
+        SELECT i.* FROM id i 
+        WHERE i.usn = p_usn;
+BEGIN
+    FOR X IN c_student LOOP
+        DBMS_OUTPUT.PUT_LINE('Student details:');
+        DBMS_OUTPUT.PUT_LINE(X.usn || ' ' || X.fn || ' ' || X.ln || ' ' || X.yog || ' ' || X.sem || ' ' || X.dept_no || ' ' || X.leader || ' ' || X.admis_type);
+    END LOOP;
+    FOR X1 IN c_id LOOP
+        DBMS_OUTPUT.PUT_LINE('ID details:');
+        DBMS_OUTPUT.PUT_LINE(X1.id_no ||' ' || X1.usn || ' ' || X1.fname|| ' ' || X1.mname||' '||X1.mobnum||' '||X1.proctor_id||' '||X1.email);
+    END LOOP;
+END;
+/
+
+
+
+//procedure
+
+exec prc_student_and_id_by_usn('1MS19CS001');
+__________________________________________________________________________________________________________________________________________
+
+
+
+4.a procedure to display the details of all sports staff and teachers:
+***
+create or replace procedure prc_sports_staff_and_teachers as
+  s_rec staff%rowtype;
+  t_rec teacher%rowtype;
+  cursor c_sports_staff is
+    select s.*
+    from staff s
+    where s.role = 'sports staff';
+  cursor c_teacher is
+    select t.*
+    from teacher t;
+begin
+  sys.dbms_output.put_line('Sports staff details:');
+  for s_rec in c_sports_staff loop
+    sys.dbms_output.put_line(s_rec.sid || ' ' || s_rec.name || ' ' || s_rec.role);
+  end loop;
+
+  sys.dbms_output.put_line('Teacher details:');
+  for t_rec in c_teacher loop
+    sys.dbms_output.put_line(t_rec.tid || ' ' || t_rec.sid || ' ' || t_rec.dno || ' ' || t_rec.subid || ' ' || t_rec.exp);
+  end loop;
+end;
+/
+
+
+
+

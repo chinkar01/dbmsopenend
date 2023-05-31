@@ -1,1 +1,1 @@
-# dbmsopenend
+# Simple-College-DBMS

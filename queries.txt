@@ -1,0 +1,202 @@
+**DDL-CREATE,ALTER,DROP
+
+create table abc(
+a int primary key,
+b varchar(10),
+c varchar(15)
+);
+
+alter table abc add d int;
+
+drop table abc;
+
+---------
+
+select * from student;
+
+select * from id where usn = '1si20cs029';
+
+SELECT id_no, fname, mname, email FROM id WHERE proctor_id = 3;
+
+To retrieve all rows from the student table where the yog is before '2022-01-01':
+SELECT * FROM student WHERE yog < '2022-01-01';
+
+
+**aggregate
+
+SELECT COUNT(*) FROM staff;
+
+SELECT AVG(exp) FROM teacher;
+
+SELECT AVG(max_credit) FROM subject;
+
+SELECT MIN(fees) FROM admission;
+
+SELECT MAX(fees) FROM admission;
+
+SELECT MAX(max_credit) FROM subject;
+
+SELECT SUM(max_credit) FROM subject;
+
+SELECT COUNT(DISTINCT proctor_id) FROM id;
+
+
+**alias
+Select tid, sid, dno, exp from teacher as T where tid = 1:
+SELECT T.tid, T.sid, T.dno, T.exp
+FROM teacher as T
+WHERE T.tid = 1;
+
+
+**ditinct
+Find the unique subject names in the "subject" table:
+SELECT DISTINCT sub_name 
+FROM subject;
+
+
+**pattern matching
+To find all the student first names which contain the pattern "A%":
+SELECT fn 
+FROM student 
+WHERE fn like 'A%';
+
+
+**Arithematic operation
+Find the number of students enrolled in each department, along with the department name:
+SELECT department.name, COUNT(student.usn) 
+FROM student 
+JOIN department ON student.dept_no = department.dept_no 
+GROUP BY department.name;
+
+
+**order by
+To order the records in the student table in descending order of their yog (year of graduation), use the following query:
+SELECT * FROM student
+ORDER BY yog DESC;
+
+To order the records in the teacher table by the exp field, and break ties by ordering by the tid field in ascending order, use the following query:
+SELECT * FROM teacher
+ORDER BY exp DESC, tid ASC;
+
+
+**Nesting
+To find the names of all students who are staying in hostel 'Boys Hostel':
+SELECT fn, ln
+FROM student
+WHERE usn IN (SELECT usn FROM student_hostel WHERE hname = 'Boys Hostel');
+
+Retrieve the name and the head of department of all departments.
+SELECT d.name as department_name, s.name as hod_name
+FROM department d
+JOIN staff s ON d.hod_id = s.sid;
+
+Retrieve the usn, first name, and last name of the leader of each department.
+SELECT stu.usn, stu.fn, stu.ln
+FROM student stu
+JOIN (
+  SELECT dept_no, MAX(fn) as max_fn
+  FROM student
+  GROUP BY dept_no
+) stu2 ON stu.dept_no = stu2.dept_no AND stu.fn = stu2.max_fn;
+
+Retrieve the names of students who are staying in the same hostel as the student with usn '1MS09CS001'.
+SELECT stu2.fn, stu2.ln
+FROM student_hostel sh
+JOIN student stu ON sh.usn = stu.usn
+JOIN student stu2 ON sh.hname = stu2.hname
+WHERE stu.usn = '1MS09CS001' AND stu2.usn <> '1MS09CS001';
+
+
+
+**ALL
+Find all students who have a leader who has a higher semester than they do:
+SELECT * FROM student
+WHERE sem < ALL (SELECT sem FROM student WHERE usn = leader);
+
+
+**EXISTS
+Find all departments where any of the teachers have more than 20 years of experience:
+sql
+Copy code
+SELECT * FROM department
+WHERE EXISTS (SELECT * FROM teacher
+             WHERE dno = department.dept_no
+               AND exp > 20);
+
+Find all students who are enrolled in any sports:
+SELECT * FROM student
+WHERE usn IN (SELECT usn FROM sports);
+
+
+
+**JOINS
+INNER JOIN:
+SELECT staff.name, department.name
+FROM staff
+INNER JOIN department ON staff.sid = department.hod_id;
+
+LEFT JOIN:
+SELECT student.fn, student.ln, hostel.hname
+FROM student
+LEFT JOIN student_hostel ON student.usn = student_hostel.usn
+LEFT JOIN hostel ON student_hostel.hname = hostel.hname;
+
+RIGHT JOIN:
+SELECT hostel.hname, staff.name
+FROM hostel
+RIGHT JOIN staff ON hostel.managerid = staff.sid;
+
+FULL OUTER JOIN:
+SELECT staff.name, subject.sub_name
+FROM staff
+FULL OUTER JOIN teacher ON staff.sid = teacher.sid
+FULL OUTER JOIN subject ON teacher.subid = subject.subid;
+
+CROSS JOIN:
+SELECT student.fn, admission.type
+FROM student
+CROSS JOIN admission;
+
+
+
+**UPDATE
+UPDATE query to increase the fees for admission type 'BTech' by 1000:
+UPDATE admission
+SET fees = fees + 1000
+WHERE type = 'BTech';
+
+UPDATE query to change the department of all students in the student table to the department with department number 3:
+UPDATE student
+SET dept_no = 3;
+
+
+
+**DELETE
+DELETE query to delete all records from the student_hostel table:
+DELETE FROM student_hostel;
+
+DELETE FROM student
+WHERE usn = '01FB15ECS111';
+
+
+
+**ASSERTION
+create an assertion that ensures that the values in the age column of a student table are between 0 and 100:
+CREATE ASSERTION age_check
+CHECK (age >= 0 AND age <= 100)
+
+
+**VIEWS
+A view to show the details of the staff and their respective departments:
+CREATE VIEW staff_dept AS
+SELECT s.sid, s.name, d.name as department
+FROM staff s
+JOIN department d ON s.sid = d.hod_id;
+
+A view to show the details of the students, their respective departments and their admission types:
+CREATE VIEW student_dept_admis AS
+SELECT s.usn, s.fn, s.ln, d.name as department, a.type as admission_type
+FROM student s
+JOIN department d ON s.dept_no = d.dept_no
+JOIN admission a ON s.admis_type = a.type;
+
